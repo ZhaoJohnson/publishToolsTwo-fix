@@ -1,0 +1,9 @@
+D:\Work\4.11-4.15\publishToolsTwo fix\publishToolsTwo\obj\Debug\publishToolsTwo.form_main.resources
+D:\Work\4.11-4.15\publishToolsTwo fix\publishToolsTwo\obj\Debug\publishToolsTwo.Properties.Resources.resources
+D:\Work\4.11-4.15\publishToolsTwo fix\publishToolsTwo\obj\Debug\publishToolsTwo.csproj.GenerateResource.Cache
+D:\Work\4.11-4.15\publishToolsTwo fix\publishToolsTwo\bin\Debug\publishToolsTwo.exe.config
+D:\Work\4.11-4.15\publishToolsTwo fix\publishToolsTwo\bin\Debug\publishToolsTwo.exe
+D:\Work\4.11-4.15\publishToolsTwo fix\publishToolsTwo\bin\Debug\publishToolsTwo.pdb
+D:\Work\4.11-4.15\publishToolsTwo fix\publishToolsTwo\obj\Debug\publishToolsTwo.exe
+D:\Work\4.11-4.15\publishToolsTwo fix\publishToolsTwo\obj\Debug\publishToolsTwo.pdb
+D:\Work\4.11-4.15\publishToolsTwo fix\publishToolsTwo\obj\Debug\publishToolsTwo.csprojResolveAssemblyReference.cache
