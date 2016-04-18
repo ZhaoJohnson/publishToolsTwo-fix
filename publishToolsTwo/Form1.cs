@@ -35,13 +35,13 @@ namespace publishToolsTwo
             this.tc_desktop.MouseDown += Tc_desktop_MouseDown;
         }
 
-      
+
 
         private void command1ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string sourcePath = Application.StartupPath;
             OpenPath = sourcePath + @"\Defult.ini";
-            
+
             //defaultBuilder.AppendLine("");
             //defaultBuilder.AppendLine(";Set to delete empty folders");
             //defaultBuilder.AppendLine(";Ture Need configuration settings True/False");
@@ -114,7 +114,7 @@ namespace publishToolsTwo
                 Dock = DockStyle.Fill,
                 Parent = newpage,
                 Text = File.ReadAllText(path)
-        };
+            };
             newpage.Controls.Add(nbTextEdit);
             return newpage;
         }
@@ -137,57 +137,59 @@ namespace publishToolsTwo
         private void goToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string scOutput = "";
+            string scPath = "";
             //bool deleteFolder = false;
 
             TabPage currentPage = this.tc_desktop.SelectedTab;
             if (currentPage == null) return;
             SaveIniFile(currentPage);
-            StringCollection scPath = new StringCollection();
+            //StringCollection scPath = new StringCollection();
             StringCollection scFilter = new StringCollection();
-            StringCollection scInclued = new StringCollection();
+            StringCollection scIncluedfile = new StringCollection();
+            StringCollection scIncluedfolder = new StringCollection();
             StringCollection scdelfiles = new StringCollection();
             StringCollection scdelfolders = new StringCollection();
-            ReadIniFile(ref scOutput, currentPage, scPath, scFilter, scInclued, scdelfiles, scdelfolders);
-            Working(scPath, scFilter, scInclued, scdelfiles, scdelfolders, scOutput);
+            ReadIniFile(ref scOutput, currentPage, ref scPath, scFilter, scIncluedfile, scIncluedfolder, scdelfiles, scdelfolders);
+            Working(scPath, scFilter, scIncluedfile, scIncluedfolder, scdelfiles, scdelfolders, scOutput);
 
             System.Diagnostics.Process.Start("Explorer.exe", $"/select,{scOutput}");
         }
 
-        private static void ReadIniFile(ref string scOutput, TabPage currentPage, StringCollection scPath, StringCollection scFilter, StringCollection scInclued,StringCollection scdelfiles, StringCollection scdelfolders)
+        private static void ReadIniFile(ref string scOutput, TabPage currentPage, ref string scPath, StringCollection scFilter, StringCollection scIncluedfile, StringCollection scIncluedFolder, StringCollection scdelfiles, StringCollection scdelfolders)
         {
             IniFiles iniFiles = new IniFiles(currentPage.ToolTipText);
             //读取所有Section
             StringCollection inisection = new StringCollection();
             iniFiles.ReadSections(inisection);
-            foreach (string s1 in inisection)
+            foreach (string section in inisection)
             {
                 //Section内的所有KEY
-                StringCollection mycs = new StringCollection();
-                iniFiles.ReadSection(s1, mycs);
-                foreach (string myc in mycs)
+                StringCollection Key = new StringCollection();
+                iniFiles.ReadSection(section, Key);
+                foreach (string values in Key)
                 {
-                    switch (s1)
+                    switch (section)
                     {
                         case "Path":
-                            scPath.Add(iniFiles.ReadString(s1, myc, ""));
+                            scPath=(iniFiles.ReadString(section, values, ""));
                             break;
                         case "Filter":
-                            scFilter.Add(iniFiles.ReadString(s1, myc, ""));
+                            scFilter.Add(iniFiles.ReadString(section, values, ""));
                             break;
                         case "includefile":
-                            scInclued.Add(iniFiles.ReadString(s1, myc, ""));
+                            scIncluedfile.Add(iniFiles.ReadString(section, values, ""));
                             break;
                         case "includefolder":
-                            scInclued.Add(iniFiles.ReadString(s1, myc, ""));
+                            scIncluedFolder.Add(iniFiles.ReadString(section, values, ""));
                             break;
                         case "DelFile":
-                            scdelfiles.Add(iniFiles.ReadString(s1, myc, ""));
+                            scdelfiles.Add(iniFiles.ReadString(section, values, ""));
                             break;
                         case "DelFolder":
-                            scdelfolders.Add(iniFiles.ReadString(s1, myc, ""));
+                            scdelfolders.Add(iniFiles.ReadString(section, values, ""));
                             break;
                         case "OutPath":
-                            scOutput = iniFiles.ReadString(s1, myc, "");
+                            scOutput = iniFiles.ReadString(section, values, "");
                             break;
                         case "GetDate":
                             getdate = true;
@@ -210,20 +212,22 @@ namespace publishToolsTwo
             Application.Exit();
         }
 
-        private void Working(StringCollection scpath, StringCollection scFilter, StringCollection scInclude, StringCollection scdelfiles, StringCollection scdelfolders
-            ,string Output)
+        private void Working(string scpath, StringCollection scFilter, StringCollection scIncludeFile, StringCollection scIncludeFolder, StringCollection scdelfiles, StringCollection scdelfolders
+            , string output)
         {
-            clearFile(scpath, scFilter, scInclude, scdelfiles, scdelfolders);
+            FileInfo outfile = new FileInfo(output);
+            var outfilepath = outfile.Directory;
 
-            if (!string.IsNullOrEmpty(Output))
-            {
-                foreach (string path in scpath)
-                {
-                    ZipHelper.CreateZip(path, Output);
-                }
-            }
+            CopyDirectory.copyDirectory(scpath, outfilepath.FullName);
+            CopyDirectory.ClearFile(outfilepath.FullName, scFilter, scIncludeFile, scIncludeFolder, scdelfiles, scdelfolders);
+
+            //clearFile(scpath, scFilter, scInclude, scdelfiles, scdelfolders);
+
+
+            ZipHelper.CreateZip(outfilepath.FullName, output);
+
         }
-        
+
         public void clearFile(StringCollection scpath, StringCollection scFilter, StringCollection scInclude, StringCollection scdelfiles, StringCollection scdelfolders)
         {
             foreach (string path in scpath)
@@ -241,13 +245,13 @@ namespace publishToolsTwo
                             }
 
                         }
-                            foreach (FileInfo file in dir.GetFiles("*.*", SearchOption.AllDirectories))
+                        foreach (FileInfo file in dir.GetFiles("*.*", SearchOption.AllDirectories))
+                        {
+                            if (file.Attributes != FileAttributes.ReadOnly)
                             {
-                                if (file.Attributes != FileAttributes.ReadOnly)
-                                {
-                                    file.Delete();
-                                }
+                                file.Delete();
                             }
+                        }
                     }
                     else
                     {
@@ -283,16 +287,17 @@ namespace publishToolsTwo
                             }
                         }
                     }
-                        foreach (DirectoryInfo directory in dir.GetDirectories())
+                    foreach (DirectoryInfo directory in dir.GetDirectories())
+                    {
+                        if (!(directory.GetFiles().Length > 0))
                         {
-                            if (!(directory.GetFiles().Length > 0))
-                            {
-                                directory.Delete();
-                            }
+                            directory.Delete();
                         }
+                    }
                 }
             }
         }
+
 
         //添加Tabpage关闭按钮
         private void Tc_desktop_MouseDown(object sender, MouseEventArgs e)
@@ -304,7 +309,7 @@ namespace publishToolsTwo
                 Rectangle myTabRect = this.tc_desktop.GetTabRect(this.tc_desktop.SelectedIndex);
                 myTabRect.Offset(myTabRect.Width - (CLOSE_SIZE + 3), 2);
                 myTabRect.Width = CLOSE_SIZE;
-                myTabRect.Height = CLOSE_SIZE;
+                myTabRect.Height = CLOSE_SIZE - 4;
                 //如果鼠标在区域内就关闭选项卡   
                 bool isClose = x > myTabRect.X && x < myTabRect.Right
                  && y > myTabRect.Y && y < myTabRect.Bottom;
