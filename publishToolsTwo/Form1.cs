@@ -237,77 +237,6 @@ namespace publishToolsTwo
             Directory.Delete(tempfolder,true);
         }
 
-        public void clearFile(StringCollection scpath, StringCollection scFilter, StringCollection scInclude, StringCollection scdelfiles, StringCollection scdelfolders)
-        {
-            foreach (string path in scpath)
-            {
-                DirectoryInfo dir = new DirectoryInfo(path);
-                if (dir.Exists)
-                {
-                    if (scInclude.Count > 0)
-                    {
-                        foreach (string include in scInclude)
-                        {
-                            foreach (FileInfo fileinclude in dir.GetFiles(include, SearchOption.AllDirectories))
-                            {
-                                fileinclude.Attributes = FileAttributes.ReadOnly;
-                            }
-
-                        }
-                        foreach (FileInfo file in dir.GetFiles("*.*", SearchOption.AllDirectories))
-                        {
-                            if (file.Attributes != FileAttributes.ReadOnly)
-                            {
-                                file.Delete();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (scdelfiles.Count > 0)
-                        {
-                            foreach (string scdelfile in scdelfiles)
-                            {
-                                foreach (FileInfo delfile in dir.GetFiles(scdelfile, SearchOption.AllDirectories))
-                                {
-                                    delfile.Delete();
-                                }
-
-                            }
-                        }
-                        if (scdelfolders.Count > 0)
-                        {
-                            foreach (string scdelfolder in scdelfolders)
-                            {
-                                foreach (DirectoryInfo directory in dir.GetDirectories(scdelfolder))
-                                {
-                                    directory.Delete();
-                                }
-                            }
-                        }
-                        foreach (FileInfo fileInfo in dir.GetFiles("*.*", SearchOption.AllDirectories))
-                        {
-                            foreach (string ft in scFilter)
-                            {
-                                if (fileInfo.Extension.ToUpper() == ft.ToUpper())
-                                {
-                                    fileInfo.Delete();
-                                }
-                            }
-                        }
-                    }
-                    foreach (DirectoryInfo directory in dir.GetDirectories())
-                    {
-                        if (!(directory.GetFiles().Length > 0))
-                        {
-                            directory.Delete();
-                        }
-                    }
-                }
-            }
-        }
-
-
         //添加Tabpage关闭按钮
         private void Tc_desktop_MouseDown(object sender, MouseEventArgs e)
         {
@@ -318,7 +247,7 @@ namespace publishToolsTwo
                 Rectangle myTabRect = this.tc_desktop.GetTabRect(this.tc_desktop.SelectedIndex);
                 myTabRect.Offset(myTabRect.Width - (CLOSE_SIZE + 3), 2);
                 myTabRect.Width = CLOSE_SIZE;
-                myTabRect.Height = CLOSE_SIZE - 4;
+                myTabRect.Height = CLOSE_SIZE;
                 //如果鼠标在区域内就关闭选项卡   
                 bool isClose = x > myTabRect.X && x < myTabRect.Right
                  && y > myTabRect.Y && y < myTabRect.Bottom;
