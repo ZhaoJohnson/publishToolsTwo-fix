@@ -66,16 +66,16 @@ namespace publishToolsTwo
                 defaultBuilder.AppendLine("filter_2=.pdb");
                 defaultBuilder.AppendLine("");
                 defaultBuilder.AppendLine(";Setup requires only the files required to keep");
-                defaultBuilder.AppendLine(";Need to configure the full name Or Null");
+                defaultBuilder.AppendLine(";Need to configure the file full name Or Null");
                 defaultBuilder.AppendLine(";Example: key=setup.exe");
                 defaultBuilder.AppendLine("[includefile]");
                 defaultBuilder.AppendLine("include=api.dll");
                 defaultBuilder.AppendLine("");
                 defaultBuilder.AppendLine(";Setup requires only the files required to keep");
-                defaultBuilder.AppendLine(";Need to configure the full name Or Null");
+                defaultBuilder.AppendLine(";Need to configure the Folder Name Or Null");
                 defaultBuilder.AppendLine(";Example: key=windows");
                 defaultBuilder.AppendLine("[includefolder]");
-                defaultBuilder.AppendLine("includefolder=api.dll");
+                defaultBuilder.AppendLine("includefolder=folderName");
                 defaultBuilder.AppendLine("");
                 defaultBuilder.AppendLine(";Setting Deletes the specified file");
                 defaultBuilder.AppendLine(";Need to configure the full name Or Null");
@@ -84,7 +84,7 @@ namespace publishToolsTwo
                 defaultBuilder.AppendLine("DelFile=fileName.dll");
                 defaultBuilder.AppendLine("");
                 defaultBuilder.AppendLine(";Setting Deletes the specified Folder");
-                defaultBuilder.AppendLine(";Need to configure the full Path Or Null");
+                defaultBuilder.AppendLine(";Need to configure the Folder Name Or Null");
                 defaultBuilder.AppendLine(";Example: key=folderName");
                 defaultBuilder.AppendLine("[DelFolder]");
                 defaultBuilder.AppendLine("DelFolder=folderName");
@@ -94,6 +94,12 @@ namespace publishToolsTwo
                 defaultBuilder.AppendLine(";Example: key=D:\\test\\setup.zip");
                 defaultBuilder.AppendLine("[OutPath]");
                 defaultBuilder.AppendLine("outPath=D:\\Sbin.zip");
+                defaultBuilder.AppendLine("");
+                defaultBuilder.AppendLine(";Set DateTime of the zip file");
+                defaultBuilder.AppendLine(";Need to configure True Or False");
+                defaultBuilder.AppendLine(";Example: key=true");
+                defaultBuilder.AppendLine("[GetDate]");
+                defaultBuilder.AppendLine("outPath=true");
                 FileStream myfs = new FileStream(OpenPath, FileMode.Create);
                 StreamWriter mysw = new StreamWriter(myfs);
                 mysw.Write(defaultBuilder.ToString());
@@ -143,16 +149,15 @@ namespace publishToolsTwo
             TabPage currentPage = this.tc_desktop.SelectedTab;
             if (currentPage == null) return;
             SaveIniFile(currentPage);
-            //StringCollection scPath = new StringCollection();
             StringCollection scFilter = new StringCollection();
             StringCollection scIncluedfile = new StringCollection();
             StringCollection scIncluedfolder = new StringCollection();
             StringCollection scdelfiles = new StringCollection();
             StringCollection scdelfolders = new StringCollection();
             ReadIniFile(ref scOutput, currentPage, ref scPath, scFilter, scIncluedfile, scIncluedfolder, scdelfiles, scdelfolders);
-            Working(scPath, scFilter, scIncluedfile, scIncluedfolder, scdelfiles, scdelfolders, scOutput);
-
-            System.Diagnostics.Process.Start("Explorer.exe", $"/select,{scOutput}");
+            Working(scPath, scFilter, scIncluedfile, scIncluedfolder, scdelfiles, scdelfolders, scOutput,getdate);
+            FileInfo result=new FileInfo(scOutput);
+            System.Diagnostics.Process.Start("Explorer.exe", $"{result.DirectoryName}");
         }
 
         private static void ReadIniFile(ref string scOutput, TabPage currentPage, ref string scPath, StringCollection scFilter, StringCollection scIncluedfile, StringCollection scIncluedFolder, StringCollection scdelfiles, StringCollection scdelfolders)
@@ -213,19 +218,23 @@ namespace publishToolsTwo
         }
 
         private void Working(string scpath, StringCollection scFilter, StringCollection scIncludeFile, StringCollection scIncludeFolder, StringCollection scdelfiles, StringCollection scdelfolders
-            , string output)
+            , string output,bool getdate)
         {
             FileInfo outfile = new FileInfo(output);
             var outfilepath = outfile.Directory;
-
-            CopyDirectory.copyDirectory(scpath, outfilepath.FullName);
-            CopyDirectory.ClearFile(outfilepath.FullName, scFilter, scIncludeFile, scIncludeFolder, scdelfiles, scdelfolders);
+            string tempfolder = outfilepath.FullName + @"\Temp";
+            CopyDirectory.copyDirectory(scpath, tempfolder);
+            CopyDirectory.ClearFile(tempfolder, scFilter, scIncludeFile, scIncludeFolder, scdelfiles, scdelfolders);
 
             //clearFile(scpath, scFilter, scInclude, scdelfiles, scdelfolders);
+            if (getdate)
+            {
+                int replan = output.LastIndexOf('.');
+                output= output.Insert(replan, DateTime.Now.ToLongDateString());
+            }
 
-
-            ZipHelper.CreateZip(outfilepath.FullName, output);
-
+            ZipHelper.CreateZip(tempfolder, output);
+            Directory.Delete(tempfolder,true);
         }
 
         public void clearFile(StringCollection scpath, StringCollection scFilter, StringCollection scInclude, StringCollection scdelfiles, StringCollection scdelfolders)

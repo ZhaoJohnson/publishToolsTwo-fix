@@ -12,7 +12,7 @@ namespace publishToolsTwo
     {
         public static void copyDirectory(string sourceDirectory, string destDirectory)
         {
-            destDirectory = destDirectory + @"\Temp";
+            
             //判断源目录和目标目录是否存在，如果不存在，则创建一个目录
             if (!Directory.Exists(sourceDirectory))
             {
@@ -22,6 +22,7 @@ namespace publishToolsTwo
             {
                 Directory.CreateDirectory(destDirectory);
             }
+
             //拷贝文件
             copyFile(sourceDirectory, destDirectory);
 
@@ -51,6 +52,7 @@ namespace publishToolsTwo
                 //若不存在，直接复制文件；若存在，覆盖复制
                 if (File.Exists(filePathTemp))
                 {
+                    File.SetAttributes(filePathTemp, FileAttributes.Normal);
                     File.Copy(filePath, filePathTemp, true);
                 }
                 else
@@ -67,21 +69,25 @@ namespace publishToolsTwo
 
             if (dir.Exists)
             {
-                foreach (FileInfo fileInfo in dir.GetFiles())
-                {
-                    fileInfo.Attributes = FileAttributes.Normal;
-                }
+                //清楚只读状态
+                File.SetAttributes(path, FileAttributes.Normal);
+                dir.Attributes= FileAttributes.Normal;
+
+                //1.开始判断是否有必要的文件夹
                 if (scIncludeFolder.Count > 0)
                 {
                     foreach (string folder in scIncludeFolder)
                     {
-                        DirectoryInfo infolder = new DirectoryInfo(folder);
-                        foreach (FileInfo firstFileInfo in infolder.GetFiles())
+                        foreach (DirectoryInfo directory in dir.GetDirectories(folder))
                         {
-                            firstFileInfo.Attributes = FileAttributes.ReadOnly;
+                            foreach (FileInfo info in directory.GetFiles("*.*", SearchOption.AllDirectories))
+                            {
+                                info.Attributes= FileAttributes.ReadOnly;
+                            }
                         }
                     }
                 }
+                //2.判断是否有必要的文件
                 if (scIncludeFile.Count > 0)
                 {
                     foreach (string include in scIncludeFile)
@@ -96,6 +102,7 @@ namespace publishToolsTwo
                     {
                         if (file.Attributes != FileAttributes.ReadOnly)
                         {
+                            file.Attributes= FileAttributes.Normal;
                             file.Delete();
                         }
                     }
@@ -141,7 +148,7 @@ namespace publishToolsTwo
                         directory.Delete();
                     }
                 }
-                foreach (FileInfo fileInfo in dir.GetFiles())
+                foreach (FileInfo fileInfo in dir.GetFiles("*.*", SearchOption.AllDirectories))
                 {
                     fileInfo.Attributes = FileAttributes.Normal;
                 }
