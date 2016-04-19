@@ -115,6 +115,7 @@ namespace publishToolsTwo
                         {
                             foreach (FileInfo delfile in dir.GetFiles(scdelfile, SearchOption.AllDirectories))
                             {
+                                delfile.Attributes= FileAttributes.Normal;
                                 delfile.Delete();
                             }
 
@@ -126,7 +127,18 @@ namespace publishToolsTwo
                         {
                             foreach (DirectoryInfo directory in dir.GetDirectories(scdelfolder))
                             {
-                                directory.Delete();
+                                try
+                                {
+                                    Directory.Delete(directory.FullName,true);
+                                }
+                                catch (Exception)
+                                {
+                                    foreach (FileInfo delFileInfo in directory.GetFiles())
+                                    {
+                                        delFileInfo.Attributes= FileAttributes.Normal;
+                                    }
+                                    Directory.Delete(directory.FullName, true);
+                                }
                             }
                         }
                     }
@@ -136,7 +148,15 @@ namespace publishToolsTwo
                         {
                             if (fileInfo.Extension.ToUpper() == ft.ToUpper())
                             {
-                                fileInfo.Delete();
+                                try
+                                {
+                                    fileInfo.Delete();
+                                }
+                                catch (Exception)
+                                {
+                                    fileInfo.Attributes= FileAttributes.Normal;
+                                    fileInfo.Delete();
+                                }
                             }
                         }
                     }
