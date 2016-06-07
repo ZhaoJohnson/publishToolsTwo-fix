@@ -73,7 +73,7 @@ namespace publishToolsTwo
                 File.SetAttributes(path, FileAttributes.Normal);
                 dir.Attributes= FileAttributes.Normal;
 
-                //1.开始判断是否有必要的文件夹
+                //1.开始判断是否有必要保留的文件夹
                 if (scIncludeFolder.Count > 0)
                 {
                     foreach (string folder in scIncludeFolder)
@@ -87,7 +87,7 @@ namespace publishToolsTwo
                         }
                     }
                 }
-                //2.判断是否有必要的文件
+                //2.判断是否有必要保留的文件
                 if (scIncludeFile.Count > 0)
                 {
                     foreach (string include in scIncludeFile)
@@ -142,6 +142,7 @@ namespace publishToolsTwo
                             }
                         }
                     }
+                    //删除指定文件
                     foreach (FileInfo fileInfo in dir.GetFiles("*.*", SearchOption.AllDirectories))
                     {
                         foreach (string ft in scFilter)
@@ -163,10 +164,11 @@ namespace publishToolsTwo
                 }
                 foreach (DirectoryInfo directory in dir.GetDirectories())
                 {
-                    if (!(directory.GetFiles().Length > 0))
+                    if (directory.GetFiles().Count()!= 0)
                     {
-                        directory.Delete();
+                        continue;
                     }
+                    Directory.Delete(directory.FullName,true);
                 }
                 foreach (FileInfo fileInfo in dir.GetFiles("*.*", SearchOption.AllDirectories))
                 {

@@ -147,7 +147,12 @@ namespace publishToolsTwo
             //bool deleteFolder = false;
 
             TabPage currentPage = this.tc_desktop.SelectedTab;
-            if (currentPage == null) return;
+            if (currentPage == null)
+            {
+                MessageBox.Show("所选地址为空");
+                return;
+                
+            };
             SaveIniFile(currentPage);
             StringCollection scFilter = new StringCollection();
             StringCollection scIncluedfile = new StringCollection();
@@ -230,7 +235,7 @@ namespace publishToolsTwo
             if (getdate)
             {
                 int replan = output.LastIndexOf('.');
-                output= output.Insert(replan, DateTime.Now.ToLongDateString());
+                output= output.Insert(replan, DateTime.Now.ToString("yyyyMMdd"));
             }
 
             ZipHelper.CreateZip(tempfolder, output);
